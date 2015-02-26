@@ -6,7 +6,7 @@ With **_Packman_** I can update multiple databases in seconds. No more copy-past
 
 ### Features
 
-- *Run certain scripts first.* Need to execute your scripts in a specific order? **_Packman_** has you covered.
+- *Run certain scripts first, or omit certain ones.* Need to execute your scripts in a specific order? **_Packman_** has you covered.
 
 - *Replace `USE [database]` easily.* Does your script specify a database, but you want to execute it on a different one? No problem. Easily replace database names and usernames (and anything else!) without having to modify your sql files.
 
