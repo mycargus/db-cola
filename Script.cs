@@ -58,12 +58,10 @@ namespace ExecuteAllDatabaseProcs
 	    switch (a_ItemToCustomize)
 	    {
 		case QueryItem.Database:
-		    _content = _content.Replace("Broker_DB", a_NewItemContent);
-		    _content = _content.Replace("BrokerProgram", a_NewItemContent);
+		    _content = _content.Replace("your_db_name", a_NewItemContent);
 		    break;
 		case QueryItem.Username:
-		    _content = _content.Replace("BrkProgramUser", a_NewItemContent);
-		    _content = _content.Replace("BrkWebUser", a_NewItemContent);
+		    _content = _content.Replace("username_to_replace", a_NewItemContent);
 		    break;
 	    }
 	}

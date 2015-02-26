@@ -13,7 +13,7 @@ namespace ExecuteAllDatabaseProcs
 	const string TABLES_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Tables";
 	const string PROCS_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Procs";
 
-	private const string BROKER_DB_MIKE = "server=dev.tplnetwork.com;uid=mikehargiss;pwd=m!k3h@rg!$$;database=Broker_DB_Mike;";
+	private const string BROKER_DB_MIKE = "server=your.dbserver.com;uid=username;pwd=password;database=your_db_name;";
 	private static List<Script> _sqlScriptsToRun;
 
 	static void Main(string[] args)
@@ -54,7 +54,6 @@ namespace ExecuteAllDatabaseProcs
 		ValidateArguments(args);
 
 		FilterScriptFiles(args);
-		//sqlScriptsToRun = Script.GetOrderedScripts(sqlScriptsToRun);
 
 		var sqlServers = GetDestinationSqlServers(args[0].Trim(), logger);
 		foreach (DestinationSqlServer server in sqlServers)

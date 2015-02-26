@@ -8,8 +8,8 @@
     <ProjectGuid>{DA6ED16D-4B5F-4BC9-8AD0-DC19A2127F8C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExecuteAllDatabaseProcs</RootNamespace>
-    <AssemblyName>ExecuteAllDatabaseProcs</AssemblyName>
+    <RootNamespace>dbcola</RootNamespace>
+    <AssemblyName>db-cola</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
