@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using mycargus.Core;
 
-namespace ExecuteAllDatabaseProcs
+namespace dbcola
 {
     class Program
     {
@@ -13,7 +12,7 @@ namespace ExecuteAllDatabaseProcs
 	const string TABLES_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Tables";
 	const string PROCS_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Procs";
 
-	private const string BROKER_DB_MIKE = "server=your.dbserver.com;uid=username;pwd=password;database=your_db_name;";
+	private const string DATABASE_CONNECTION_STRING = "server=your.dbserver.com;uid=username;pwd=password;database=your_db_name;";
 	private static List<Script> _sqlScriptsToRun;
 
 	static void Main(string[] args)
@@ -21,7 +20,7 @@ namespace ExecuteAllDatabaseProcs
 	    args = new[]
 		    {
 			    // destination sql servers' connection strings, pipe-delimited |
-			    BROKER_DB_MIKE,
+			    DATABASE_CONNECTION_STRING,
 
 			    // full path to sql script directory
 			    PROCS_DIRECTORY//,	    
