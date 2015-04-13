@@ -18,5 +18,5 @@ With **_db-cola_** I can update multiple databases in seconds. No more copy-past
 
 
 
-I use **_db-cola_** alongside database snapshots for fast database modification and restoration.
+I use **_db-cola_** alongside database snapshots for fast database modification and restoration. Click [here](http://stackoverflow.com/questions/29435773/proper-way-to-maintain-database-known-state-by-rolling-back-transactions-in-nuni/29549716#29549716) for an example.
 
