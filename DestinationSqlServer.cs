@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using mycargus.Core;
 
 namespace dbcola
@@ -8,8 +9,8 @@ namespace dbcola
     public class DestinationSqlServer
     {
 	public string Alias { get; set; }
-	private ConnectionString _connectionString;
-	private ILogger _logger;
+	private readonly ConnectionString _connectionString;
+	private readonly ILogger _logger;
 	private SqlConnection _connection;
 
 	public DestinationSqlServer(string a_ConnString, ILogger a_Logger)
@@ -28,8 +29,8 @@ namespace dbcola
 		_logger.WriteEntry("\nExecuting scripts ...");
 
 
-		SqlDatabase database = new SqlDatabase(_connectionString, _connection);
-		foreach (Script script in a_Scripts)
+		var database = new SqlDatabase(_connectionString, _connection);
+		foreach (var script in a_Scripts)
 		{
 		    _logger.WriteEntry(script.GetFileName());
 		    database.Update(script);
@@ -59,8 +60,8 @@ namespace dbcola
 
     internal class SqlDatabase
     {
-	private ConnectionString _connString;
-	private SqlConnection _sqlConnection;
+	private readonly ConnectionString _connString;
+	private readonly SqlConnection _sqlConnection;
 
 	public SqlDatabase(ConnectionString a_ConnString, SqlConnection a_SqlConn)
 	{
@@ -72,18 +73,17 @@ namespace dbcola
 	{
 	    CustomizeQueryForDatabase(ref a_Script);
 
-	    string[] parsedScript = a_Script.Parse();
-	    foreach (var queryItem in parsedScript)
-	    {
-		if (queryItem.Trim().Length < 5)
-		    continue;
+	    var parsedScript = a_Script.Parse();
+		foreach (var queryItem in parsedScript.Where(a_QueryItem =>
+		{
+			if (a_QueryItem == null) throw new ArgumentNullException("a_QueryItem");
+			return a_QueryItem.Trim().Length >= 5;
+		}))
 
 		using (var cmd = new SqlCommand(queryItem, _sqlConnection))
 		{
-		    cmd.ExecuteNonQuery();
+			cmd.ExecuteNonQuery();
 		}
-
-	    }
 	}
 
 	private void CustomizeQueryForDatabase(ref Script a_Script)
@@ -97,7 +97,7 @@ namespace dbcola
     {
 	public string serverName;
 	public string databaseUserId;
-	private string databasePassword;
+	private string _databasePassword;
 	public string databaseName;
 	public string connectionString;
 
@@ -127,7 +127,7 @@ namespace dbcola
 
 	private void SetDatabasePassword()
 	{
-	    databasePassword = connectionString.Split(';')[2].Split('=')[1];
+	    _databasePassword = connectionString.Split(';')[2].Split('=')[1];
 	}
 
 	private void SetDatabaseName()

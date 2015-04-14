@@ -8,217 +8,194 @@ namespace dbcola
 {
     class Program
     {
-	const string FILES_TO_OMIT = "eBankHolidays.sql,eRegionZipCode.sql,eUSStates.sql";
-	const string TABLES_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Tables";
-	const string PROCS_DIRECTORY = "C:\\Source Code\\Web Applications\\TPLNetwork\\Sql\\Procs";
+		const string _FilesToOmit = "pSomeProcYouWantToIgnore.sql,pAnotherProcToIgnore.sql";
+		const string _TablesDirectory = "C:\\Database\\Sql\\Tables";
 
-	private const string DATABASE_CONNECTION_STRING = "server=your.dbserver.com;uid=username;pwd=password;database=your_db_name;";
-	private static List<Script> _sqlScriptsToRun;
 
-	static void Main(string[] args)
-	{
-	    args = new[]
-		    {
-			    // destination sql servers' connection strings, pipe-delimited |
-			    DATABASE_CONNECTION_STRING,
+		private const string _YourDatabases = "server=test.databaseUri.com;uid=your_username;pwd=your_password;database=your_database;|server=test.otherDatabaseUri.com;uid=your_username;pwd=your_password;database=your_other_database;";
+		private static List<Script> _sqlScriptsToRun;
 
-			    // full path to sql script directory
-			    PROCS_DIRECTORY//,	    
+		static void Main(string[] a_Args)
+		{
+			a_Args = new[]
+				{
+					// destination sql servers' connection strings, pipe-delimited |
+					_YourDatabases,
+
+					// full path to sql script directory
+					_TablesDirectory//,	    
  
-			    // (optional) script files' last modified date (yyyy-mm-dd). Will run all scripts in directory if left blank.
-			    //"2015-02-06"							     
-		    };
-
-	    var scriptDirectoryPath = args[1];
-	    _sqlScriptsToRun = new List<Script>();
-	    if (scriptDirectoryPath.Split('\\').Last().Equals("Tables", StringComparison.CurrentCultureIgnoreCase))
-	    {
-		int priority = 0;
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\CREATE_TABLE_ProductType.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\CREATE_TABLE_BrokerProduct.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\CREATE_TABLE_LoanSequence.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\CREATE_TABLE_LoanApproval.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\INSERT_INTO_ProductType.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\INSERT_INTO_BrokerProduct.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\INSERT_INTO_Brokers_MSW.sql", ++priority));
-		_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\ALTER TABLE PendingAppsLoans.sql", ++priority));
-	    }
+					// (optional) script files' last modified date (yyyy-mm-dd). Will run all scripts in directory if left blank.
+					//"2015-02-06"							     
+				};
 
 
-	    //ILogger logger = new FileLogger("C:/Users/Michael Hargiss/Desktop/dbUpdateLog.txt", false);
-	    ILogger logger = new ConsoleLogger();
+			var scriptDirectoryPath = a_Args[1];
+			_sqlScriptsToRun = new List<Script>();
+			if (scriptDirectoryPath.Split('\\').Last().Equals("Tables", StringComparison.CurrentCultureIgnoreCase))
+			{
+				_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\CREATE_TABLE_Script.sql"));
+				_sqlScriptsToRun.Add(new Script(scriptDirectoryPath + "\\INSERT_INTO_Table_Script.sql"));
+			}
 
-	    try
-	    {
-		ValidateArguments(args);
 
-		FilterScriptFiles(args);
+			//ILogger logger = new FileLogger("./dbUpdateLog.txt", false);
+			ILogger logger = new ConsoleLogger();
 
-		var sqlServers = GetDestinationSqlServers(args[0].Trim(), logger);
-		foreach (DestinationSqlServer server in sqlServers)
-		{
-		    server.UpdateDatabase(_sqlScriptsToRun);
+			try
+			{
+				ValidateArguments(a_Args);
+
+				FilterScriptFiles(a_Args);
+
+				var sqlServers = GetDestinationSqlServers(a_Args[0].Trim(), logger);
+				foreach (var server in sqlServers)
+					server.UpdateDatabase(_sqlScriptsToRun);
+		    
+			}
+			catch (Exception ex)
+			{
+				PrintErrorMessage(ex.Message + Environment.NewLine + ex.StackTrace, logger);
+			}
+			finally
+			{
+				if (logger.GetType() == typeof(ConsoleLogger))
+				{
+					logger.WriteEntry("\nDone!");
+					Console.ReadLine();
+				}
+			}
 		}
-	    }
-	    catch (Exception ex)
-	    {
-		PrintErrorMessage(ex.Message + Environment.NewLine + ex.StackTrace, logger);
-	    }
-	    finally
-	    {
-		if (logger.GetType() == typeof(ConsoleLogger))
+
+		static void FilterScriptFiles(IReadOnlyList<string> a_ProgramArgs)
 		{
-		    logger.WriteEntry("\nDone!");
-		    Console.ReadLine();
-		}
-	    }
-	}
+			var onlyRunSpecifiedScripts = a_ProgramArgs[1].Equals(_TablesDirectory, StringComparison.CurrentCultureIgnoreCase);
+			if (onlyRunSpecifiedScripts) return;
 
-	static void FilterScriptFiles(string[] a_ProgramArgs)
-	{
-	    DateTime fileLastModifiedDate = GetFilesLastModifiedDate(a_ProgramArgs);
+			var fileLastModifiedDate = GetFilesLastModifiedDate(a_ProgramArgs);
 
-	    int orderNumber = _sqlScriptsToRun.Count;
-	    foreach (string filePath in GetSqlScriptFileNames(a_ProgramArgs[1].Trim()))
-	    {
-		var fileInfo = new FileInfo(filePath);
-		if ((fileInfo.LastWriteTime < fileLastModifiedDate) || (OmitFile(fileInfo.Name)))
-		    continue;
+			foreach (var filePath in GetSqlScriptFileNames(a_ProgramArgs[1].Trim()))
+			{
+				var fileInfo = new FileInfo(filePath);
+				if ((fileInfo.LastWriteTime < fileLastModifiedDate) || (OmitFile(fileInfo.Name)))
+					continue;
 
-		Script script = new Script(filePath, orderNumber);
+				var script = new Script(filePath);
 		
-		var match = _sqlScriptsToRun.FirstOrDefault(s => s.GetFileName().Equals(script.GetFileName()));
-		if (match != null)
-		    continue;
+				var match = _sqlScriptsToRun.FirstOrDefault(a_S => a_S.GetFileName().Equals(script.GetFileName()));
+				if (match != null)
+					continue;
 
-		script.UpdateOrderNumber(++orderNumber);
-		_sqlScriptsToRun.Add(script);
-	    }
-	}
-
-	static bool OmitFile(string a_FileName)
-	{
-	    return FILES_TO_OMIT.Contains(a_FileName);
-	}
-
-	static List<string> GetSqlScriptFileNames(string a_ScriptsDirectoryPath)
-	{
-		if (!Directory.Exists(a_ScriptsDirectoryPath) || Directory.GetFiles(a_ScriptsDirectoryPath).Length == 0)
-			throw new Exception(String.Format("Directory '{0}' doesn't exist or is empty!", a_ScriptsDirectoryPath));
-
-		return Directory.GetFiles(a_ScriptsDirectoryPath, "*.SQL", SearchOption.AllDirectories).ToList();
-	}
-
-	static DateTime GetFilesLastModifiedDate(string[] args)
-	{
-	    string date = String.Empty;
-	    if (args.Length > 2)
-		date = args[2].Trim();
-
-	    return (date != String.Empty && date.Length > 0) 
-		? DateTime.Parse(date)
-		: DateTime.MinValue;
-	}
-
-	static List<DestinationSqlServer> GetDestinationSqlServers(string a_ConnectionStrings, ILogger a_Logger)
-	{
-	    var destinationSqlServers = new List<DestinationSqlServer>();
-
-	    foreach (string connString in GetConnectionStrings(a_ConnectionStrings))
-	    {
-		destinationSqlServers.Add(new DestinationSqlServer(connString, a_Logger));
-	    }
-
-	    return destinationSqlServers;
-	}
-
-	static List<string> GetConnectionStrings(string a_ConnectionStrings)
-	{
-	    try
-	    {
-		List<string> parsedConnStrings = new List<string>();
-		if (a_ConnectionStrings.Contains('|'))
-		{
-		    foreach (string connString in a_ConnectionStrings.Split('|'))
-		    {
-			if (connString.Trim().Length > 0)
-			    parsedConnStrings.Add(connString);
-		    }
+				_sqlScriptsToRun.Add(script);
+			}
 		}
-		else
-		{
-			parsedConnStrings.Add(a_ConnectionStrings);
-		}
-		return parsedConnStrings;
-	    }
-	    catch (Exception ex)
-	    {
-		throw new Exception("Unable to parse the supplied arguments! " + ex.Message);
-	    }
-	}
 
-	static void ValidateArguments(string[] args)
-	{
-	    if (!HasCorrectNumberOfArgs(args))
-	    {
-		Console.WriteLine("\n\n" + GetHelp());
-		throw new ArgumentException("All required arguments weren't supplied!\n\n" + GetHelp());
-	    }
-	}
-
-	static bool HasCorrectNumberOfArgs(string[] args)
-	{
-	    return args.Length >= 2 && args.Length <= 4;
-	}
-
-	static void PrintErrorMessage(string a_Message, ILogger a_Logger)
-	{
-	    a_Logger.WriteEntry(Environment.NewLine);
-	    a_Logger.WriteEntry(a_Message);
-	    a_Logger.WriteEntry(Environment.NewLine);
-	}
-
-	static string GetHelp()
-	{
-	    return "Expected Arguments:" +
-		Environment.NewLine +
-		"1: Pipe-delimited ('|') list of destination servers' connection strings" +
-		Environment.NewLine +
-		"2: Full path to SQL scripts directory" +
-		Environment.NewLine +
-		"3 (optional): Script files' last modified date (yyyy-mm-dd).  Default will run all SQL scripts in the supplied directory." +
-		Environment.NewLine;
-	}
-
-	static void AskUserWhatToDo(Exception ex)
-	{
-	    string instructions = "\nHit enter to continue, or type 'n' and hit enter to exit program.";
-	    Console.WriteLine("\nBummer. That one didn't work...  " + ex.Message);
-	    Console.WriteLine(instructions);
-	    string response = Console.ReadLine();
-	    do
-	    {
-		if (response == null)
+		static bool OmitFile(string a_FileName)
 		{
-		    Console.WriteLine(instructions);
-		    response = Console.ReadLine();
+			return _FilesToOmit.Contains(a_FileName);
 		}
-		else if (response.Equals(""))
+
+		static IEnumerable<string> GetSqlScriptFileNames(string a_ScriptsDirectoryPath)
 		{
-		    break;
+			if (!Directory.Exists(a_ScriptsDirectoryPath) || Directory.GetFiles(a_ScriptsDirectoryPath).Length == 0)
+				throw new Exception(String.Format("Directory '{0}' doesn't exist or is empty!", a_ScriptsDirectoryPath));
+
+			return Directory.GetFiles(a_ScriptsDirectoryPath, "*.SQL", SearchOption.AllDirectories).ToList();
 		}
-		else if (response.Equals("n"))
+
+		static DateTime GetFilesLastModifiedDate(IReadOnlyList<string> a_Args)
 		{
-		    Console.WriteLine("\nClosing program...");
-		    throw new ApplicationException("User told me to close.");
+			var date = String.Empty;
+			if (a_Args.Count > 2)
+			date = a_Args[2].Trim();
+
+			return (date != String.Empty && date.Length > 0) 
+			? DateTime.Parse(date)
+			: DateTime.MinValue;
 		}
-		else
+
+		static IEnumerable<DestinationSqlServer> GetDestinationSqlServers(string a_ConnectionStrings, ILogger a_Logger)
 		{
-		    Console.WriteLine(instructions);
-		    response = Console.ReadLine();
+			return GetConnectionStrings(a_ConnectionStrings).Select(a_ConnString => new DestinationSqlServer(a_ConnString, a_Logger)).ToList();
 		}
-	    } while (response == null || !response.Equals("") || !response.Equals("n"));
-	}
+
+		static IEnumerable<string> GetConnectionStrings(string a_ConnectionStrings)
+		{
+			try
+			{
+				var parsedConnStrings = new List<string>();
+				if (a_ConnectionStrings.Contains('|'))
+					parsedConnStrings.AddRange(a_ConnectionStrings.Split('|').Where(a_ConnString => a_ConnString.Trim().Length > 0));
+				else
+					parsedConnStrings.Add(a_ConnectionStrings);
+				return parsedConnStrings;
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("Unable to parse the supplied arguments! " + ex.Message);
+			}
+		}
+
+		static void ValidateArguments(IReadOnlyCollection<string> a_Args)
+		{
+			if (HasCorrectNumberOfArgs(a_Args)) return;
+			Console.WriteLine("\n\n" + GetHelp());
+			throw new ArgumentException("All required arguments weren't supplied!\n\n" + GetHelp());
+		}
+
+		static bool HasCorrectNumberOfArgs(IReadOnlyCollection<string> a_Args)
+		{
+			return a_Args.Count >= 2 && a_Args.Count <= 4;
+		}
+
+		static void PrintErrorMessage(string a_Message, ILogger a_Logger)
+		{
+			a_Logger.WriteEntry(Environment.NewLine);
+			a_Logger.WriteEntry(a_Message);
+			a_Logger.WriteEntry(Environment.NewLine);
+		}
+
+		static string GetHelp()
+		{
+			return "Expected Arguments:" +
+			Environment.NewLine +
+			"1: Pipe-delimited ('|') list of destination servers' connection strings" +
+			Environment.NewLine +
+			"2: Full path to SQL scripts directory" +
+			Environment.NewLine +
+			"3 (optional): Script files' last modified date (yyyy-mm-dd).  Default will run all SQL scripts in the supplied directory." +
+			Environment.NewLine;
+		}
+
+		static void AskUserWhatToDo(Exception a_Ex)
+		{
+			Console.WriteLine("\nBummer. That one didn't work...  " + a_Ex.Message);
+			const string Instructions = "\nHit enter to continue, or type 'n' and hit enter to exit program.";
+			Console.WriteLine(Instructions);
+			var response = Console.ReadLine();
+			do
+			{
+				if (response == null)
+				{
+					Console.WriteLine(Instructions);
+					response = Console.ReadLine();
+				}
+				else if (response.Equals(""))
+				{
+					break;
+				}
+				else if (response.Equals("n"))
+				{
+					Console.WriteLine("\nClosing program...");
+					throw new ApplicationException("User told me to close.");
+				}
+				else
+				{
+					Console.WriteLine(Instructions);
+					response = Console.ReadLine();
+				}
+			} while (response == null || !response.Equals("") || !response.Equals("n"));
+		}
 
     }
 }
