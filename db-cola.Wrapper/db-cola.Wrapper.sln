@@ -3,12 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db-cola.Driver", "db-cola.Driver\db-cola.Driver.csproj", "{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db-cola.Wrapper", "db-cola.Wrapper\db-cola.Wrapper.csproj", "{184D226A-FA5C-420C-BAEF-DFBD7638A739}"
-	ProjectSection(ProjectDependencies) = postProject
-		{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1} = {CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db-cola.Wrapper", "db-cola.Wrapper.csproj", "{184D226A-FA5C-420C-BAEF-DFBD7638A739}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE0E4247-4BB8-42C1-B91F-5CCA25C862C1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{184D226A-FA5C-420C-BAEF-DFBD7638A739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{184D226A-FA5C-420C-BAEF-DFBD7638A739}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{184D226A-FA5C-420C-BAEF-DFBD7638A739}.Release|Any CPU.ActiveCfg = Release|Any CPU
