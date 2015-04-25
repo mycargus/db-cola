@@ -1,4 +1,4 @@
-# db-cola v0.1
+# db-cola
 
 As a test automation engineer, I want to spin up a fresh database quickly. What I don't want to do is copy-paste each and every update script and then execute them one by one in the MSSQL management tools GUI.
 
