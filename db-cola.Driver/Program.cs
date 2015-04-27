@@ -71,6 +71,7 @@ namespace db_cola.Driver
 			catch (Exception ex)
 			{
 				PrintErrorMessage(ex.Message + Environment.NewLine + ex.StackTrace, logger);
+				Console.ReadLine();
 				Environment.Exit(1);
 			}
 			finally

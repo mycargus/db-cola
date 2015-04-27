@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using db_cola.Driver;
 
 namespace db_cola.Wrapper
 {
 	class Program
 	{
 		const string _ProgramToRun = "..db-cola\\bin\\Debug\\db-cola.exe";
+		private static readonly ILogger Logger = new ConsoleLogger();
 
 		static void Main(string[] a_Args)
 		{
@@ -41,10 +43,11 @@ namespace db_cola.Wrapper
 			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
+				Console.WriteLine("Press enter to exit");
+				Console.ReadLine();
 			}
 			finally
 			{
-				Console.ReadLine();
 				Environment.Exit(1);
 			}
 		}
@@ -55,6 +58,9 @@ namespace db_cola.Wrapper
 
 			foreach (var connectionString in a_ConnectionString)
 			{
+				var destinationDatabaseServer = new DestinationSqlServer(connectionString, Logger);
+				destinationDatabaseServer.RestoreDatabaseFromSnapshot();
+
 				foreach (var directory in a_ScriptDirectories)
 				{
 					ExecuteDbCola(connectionString, directory);
