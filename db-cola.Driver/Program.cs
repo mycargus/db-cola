@@ -67,18 +67,16 @@ namespace db_cola.Driver
 				foreach (var server in sqlServers)
 					server.UpdateDatabase(_sqlScriptsToRun);
 
+				logger.WriteEntry(Environment.NewLine);
+				logger.WriteEntry("\nDone!");
+				logger.WriteEntry(Environment.NewLine);
 			}
 			catch (Exception ex)
 			{
 				PrintErrorMessage(ex.Message + Environment.NewLine + ex.StackTrace, logger);
+				Console.WriteLine("\nPress enter to continue, or close the console window to quit.");
 				Console.ReadLine();
 				Environment.Exit(1);
-			}
-			finally
-			{
-				logger.WriteEntry(Environment.NewLine);
-				logger.WriteEntry("\nDone!");
-				logger.WriteEntry(Environment.NewLine);
 			}
 		}
 
